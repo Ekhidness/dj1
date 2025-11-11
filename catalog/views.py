@@ -2,6 +2,7 @@ from django.shortcuts import render
 from .models import Book, Author, BookInstance, Genre
 from django.views import generic
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import PermissionRequiredMixin
 def index(request):
     """
     Функция отображения для домашней страницы сайта.
@@ -64,3 +65,17 @@ class LoanedBooksByUserListView(LoginRequiredMixin,generic.ListView):
 
     def get_queryset(self):
         return BookInstance.objects.filter(borrower=self.request.user).filter(status__exact='o').order_by('due_back')
+
+
+class AllBorrowedBooksListView(PermissionRequiredMixin, generic.ListView):
+    """Generic class-based view listing all books on loan (for librarians only)."""
+    model = BookInstance
+    template_name = 'catalog/all_borrowed_books.html'
+    paginate_by = 10
+    permission_required = 'catalog.can_mark_returned'
+
+    def get_queryset(self):
+        return BookInstance.objects.filter(
+            status__exact='o'
+        ).order_by('due_back')
+
