@@ -5,6 +5,7 @@ from django.db.models.functions import Lower
 import uuid  # Required for unique book instances
 from datetime import date
 from django.conf import settings
+from django.contrib.auth.models import User
 
 class Genre(models.Model):
     """Model representing a book genre (e.g. Science Fiction, Non Fiction)."""
@@ -102,8 +103,9 @@ class BookInstance(models.Model):
 
     @property
     def is_overdue(self):
-        """Determines if the book is overdue based on due date and current date."""
-        return bool(self.due_back and date.today() > self.due_back)
+        if self.due_back and date.today() > self.due_back:
+            return True
+        return False
 
     LOAN_STATUS = (
         ('d', 'Maintenance'),
