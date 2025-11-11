@@ -1,11 +1,10 @@
 from django.db import models
+
+# Create your models here.
+
 from django.urls import reverse  # To generate URLS by reversing URL patterns
 from django.db.models import UniqueConstraint
 from django.db.models.functions import Lower
-import uuid  # Required for unique book instances
-from datetime import date
-from django.conf import settings
-from django.contrib.auth.models import User
 
 class Genre(models.Model):
     """Model representing a book genre (e.g. Science Fiction, Non Fiction)."""
@@ -72,7 +71,7 @@ class Book(models.Model):
     # ManyToManyField used because a genre can contain many books and a Book can cover many genres.
     # Genre class has already been defined so we can specify the object above.
     language = models.ForeignKey(
-        'Language', on_delete=models.SET_NULL, null=True, blank=True)
+        'Language', on_delete=models.SET_NULL, null=True)
 
     class Meta:
         ordering = ['title', 'author']
@@ -91,6 +90,13 @@ class Book(models.Model):
         """String for representing the Model object."""
         return self.title
 
+
+import uuid  # Required for unique book instances
+from datetime import date
+
+from django.conf import settings  # Required to assign User as a borrower
+
+
 class BookInstance(models.Model):
     """Model representing a specific copy of a book (i.e. that can be borrowed from the library)."""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4,
@@ -103,9 +109,8 @@ class BookInstance(models.Model):
 
     @property
     def is_overdue(self):
-        if self.due_back and date.today() > self.due_back:
-            return True
-        return False
+        """Determines if the book is overdue based on due date and current date."""
+        return bool(self.due_back and date.today() > self.due_back)
 
     LOAN_STATUS = (
         ('d', 'Maintenance'),
