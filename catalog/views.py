@@ -262,3 +262,17 @@ class BookInstanceDelete(PermissionRequiredMixin, DeleteView):
     model = BookInstance
     success_url = reverse_lazy('bookinstances')
     permission_required = 'catalog.delete_bookinstance'
+
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+
+class AllBorrowedBooksListView(PermissionRequiredMixin, generic.ListView):
+    """Generic class-based view listing all books on loan (for librarians only)."""
+    model = BookInstance
+    template_name = 'catalog/all_borrowed_books.html'
+    paginate_by = 10
+    permission_required = 'catalog.can_mark_returned'
+
+    def get_queryset(self):
+        return BookInstance.objects.filter(
+            status__exact='o'
+        ).order_by('due_back')
