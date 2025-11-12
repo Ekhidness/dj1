@@ -19,6 +19,13 @@ def index(request):
     num_visits += 1
     request.session['num_visits'] = num_visits
 
+    # проверьте себя
+    num_genres = Genre.objects.all().count()
+    search_word = "Мир"
+    num_books_with_word = Book.objects.filter(
+        title__icontains=search_word
+    ).count()
+
     # Render the HTML template index.html with the data in the context variable.
     return render(
         request,
